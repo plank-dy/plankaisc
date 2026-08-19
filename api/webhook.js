@@ -1,28 +1,39 @@
-export default async function handler(req, res) {
-  if (req.method !== "POST") {
-    return res.status(200).send("ok");
+import fs from 'fs';
+import path from 'path';
+
+function loadEnv() {
+  try {
+    const raw = fs.readFileSync(path.resolve('.env'), 'utf8');
+    raw.split('\n').forEach(line => {
+      const r = line.match(/^([A-Z0-9_]+)=(.+)$/);
+      if (r) process.env[r[1]] = r[2].trim();
+    })
+  } catch (e) {
+    console.log('读.env失败', e.message);
   }
+}
+loadEnv();
+
+export default async function handler(req, res) {
+  if (req.method !== "POST") return res.status(200).send("ok");
   try {
     const update = req.body;
     const msg = update.message;
-    if (!msg || msg.text !== "/start") {
-      return res.status(200).send("ok");
-    }
+    if (!msg || msg.text !== "/start") return res.status(200).send("ok");
 
     const token = process.env.BOT_TOKEN;
-    if (!token) throw new Error("BOT_TOKEN缺失");
+    if (!token) return res.status(200).send("ok");
 
-    // 先只发纯文本，排除WebApp域名配置问题
     await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
       method: "POST",
-      headers: {"Content-Type":"application/json"},
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         chat_id: msg.chat.id,
-        text: "✅ /start 收到啦！测试成功"
+        text: "收到 /start"
       })
-    });
-  } catch (e) {
-    console.log("ERR:", e.message);
+    })
+  } catch (err) {
+    console.log(err.message);
   }
   res.status(200).send("ok");
 }
