@@ -29,7 +29,15 @@ export default async function handler(req, res) {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         chat_id: msg.chat.id,
-        text: "收到 /start"
+        text: "欢迎来到AI会员商店👇",
+        reply_markup: {
+          inline_keyboard: [[
+            {
+              text: "打开商店",
+              web_app: { url: "https://plankaisc-ten.vercel.app" }
+            }
+          ]]
+        }
       })
     })
   } catch (err) {
