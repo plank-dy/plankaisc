@@ -1,11 +1,6 @@
 async function tgApi(method, body) {
-  // 同样分段+随机变量
-  const s02 = "8855014573:AAHWM";
-  const t5g = "MLzvIgcqgj57L";
-  const z1q = "VI72x6bCge3zwZviw";
-  const tk = s02 + t5g + z1q;
-
-  return fetch(`https://api.telegram.org/bot${tk}/${method}`, {
+  const token = "8855014573:AAHWMMLzvIgcqgj57LVI72x6bCge3zwZviw";
+  return fetch(`https://api.telegram.org/bot${token}/${method}`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(body)
@@ -17,9 +12,8 @@ export default async function handler(req, res) {
 
   try {
     const update = req.body;
-    console.log("收到Update：", JSON.stringify(update));
 
-    // /start
+    // /start 入口
     if (update.message?.text === "/start") {
       await tgApi("sendMessage", {
         chat_id: update.message.chat.id,
@@ -36,7 +30,7 @@ export default async function handler(req, res) {
       return res.status(200).send("ok");
     }
 
-    // /paysupport
+    // Stars强制要求 /paysupport
     if (update.message?.text === "/paysupport") {
       await tgApi("sendMessage", {
         chat_id: update.message.chat.id,
@@ -45,7 +39,7 @@ export default async function handler(req, res) {
       return res.status(200).send("ok");
     }
 
-    // pre_checkout_query（Stars必写）
+    // 预结账校验（Stars核心，不能删）
     if (update.pre_checkout_query) {
       await tgApi("answerPreCheckoutQuery", {
         ok: true,
@@ -74,9 +68,10 @@ export default async function handler(req, res) {
       return res.status(200).send("ok");
     }
 
+    // 其他消息直接忽略
     return res.status(200).send("ok");
   } catch (err) {
-    console.log("全局异常：", err.message);
+    console.log("err:", err.message);
     return res.status(200).send("ok");
   }
 }
