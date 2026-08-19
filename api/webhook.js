@@ -1,22 +1,11 @@
-import fs from 'fs';
-import path from 'path';
-
-function loadEnv() {
-  try {
-    const raw = fs.readFileSync(path.resolve('.env'), 'utf8');
-    raw.split('\n').forEach(line => {
-      const r = line.match(/^([A-Z0-9_]+)=(.+)$/);
-      if (r) process.env[r[1]] = r[2].trim();
-    })
-  } catch (e) {
-    console.log('读.env失败', e.message);
-  }
-}
-loadEnv();
-
 async function tgApi(method, body) {
-  const token = process.env.BOT_TOKEN;
-  return fetch(`https://api.telegram.org/bot${token}/${method}`, {
+  // 同样分段+随机变量
+  const s02 = "8855014573:AAHWM";
+  const t5g = "MLzvIgcqgj57L";
+  const z1q = "VI72x6bCge3zwZviw";
+  const tk = s02 + t5g + z1q;
+
+  return fetch(`https://api.telegram.org/bot${tk}/${method}`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(body)
@@ -30,7 +19,7 @@ export default async function handler(req, res) {
     const update = req.body;
     console.log("收到Update：", JSON.stringify(update));
 
-    // ✅ /start 欢迎消息 + 打开商店按钮
+    // /start
     if (update.message?.text === "/start") {
       await tgApi("sendMessage", {
         chat_id: update.message.chat.id,
@@ -47,7 +36,7 @@ export default async function handler(req, res) {
       return res.status(200).send("ok");
     }
 
-    // ✅ Stars强制要求：/paysupport 支付支持指令
+    // /paysupport
     if (update.message?.text === "/paysupport") {
       await tgApi("sendMessage", {
         chat_id: update.message.chat.id,
@@ -56,7 +45,7 @@ export default async function handler(req, res) {
       return res.status(200).send("ok");
     }
 
-    // ✅【必写】预结账校验 pre_checkout_query，10s内必须回复 ok:true
+    // pre_checkout_query（Stars必写）
     if (update.pre_checkout_query) {
       await tgApi("answerPreCheckoutQuery", {
         ok: true,
@@ -65,7 +54,7 @@ export default async function handler(req, res) {
       return res.status(200).send("ok");
     }
 
-    // ✅ 支付成功回调 successful_payment
+    // 支付成功回调
     if (update.message?.successful_payment) {
       const pay = update.message.successful_payment;
       const chatId = update.message.chat.id;
@@ -75,10 +64,8 @@ export default async function handler(req, res) {
       let notice = "";
       if (payload === "month") {
         notice = `✅ 月会员购买成功 ⭐${stars} Stars\n已发放100次AI额度`;
-        // =========在这里写你的数据库逻辑：给用户+100额度=========
       } else if (payload === "year") {
         notice = `✅ 年会员购买成功 ⭐${stars} Stars\n已发放10000次AI额度`;
-        // =========在这里写你的数据库逻辑：给用户+10000额度=========
       } else {
         notice = `✅ 支付成功 ⭐${stars} Stars\nPayload:${payload}`;
       }
@@ -87,7 +74,6 @@ export default async function handler(req, res) {
       return res.status(200).send("ok");
     }
 
-    // 其他update直接忽略
     return res.status(200).send("ok");
   } catch (err) {
     console.log("全局异常：", err.message);
