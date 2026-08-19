@@ -1,29 +1,55 @@
 <!DOCTYPE html>
-<html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI会员商店</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        * {font-family: system-ui, sans-serif; box-sizing: border-box;}
+        body {padding:18px; margin:0; background:#fff;}
+        .item {border:1px solid #eee; border-radius:12px; padding:16px; margin-bottom:14px;}
+        .buy-btn {padding:9px 16px; background:#24A1DE; color:white; border:none; border-radius:8px; font-size:16px;}
+    </style>
+</head>
 <body>
-<h2>AI会员商店</h2>
-<div>
-  <p>月会员｜100次AI额度：250 ⭐ Stars</p>
-  <button onclick="buy('premium_month')">购买</button>
-</div>
-<div>
-  <p>年会员｜10000次AI额度：1800 ⭐ Stars</p>
-  <button onclick="buy('premium_year')">购买</button>
-</div>
+    <h1>AI会员商店</h1>
 
-<script>
-// Telegram WebApp SDK
-const tg = window.Telegram.WebApp;
-tg.expand();
+    <div class="item">
+        <p>月会员｜100次AI额度：250 ⭐ Stars</p>
+        <button class="buy-btn" onclick="buy('month')">购买</button>
+    </div>
 
-async function buy(payload) {
-  // 通知后端，调用TG接口生成Stars发票sendInvoice
-  const res = await fetch('/api/webhook.js', {
-    method: 'POST',
-    headers: {'Content-Type':'application/json'},
-    body: JSON.stringify({type:'createInvoice', payload, uid: tg.initDataUnsafe.user.id})
-  })
-}
-</script>
+    <div class="item">
+        <p>年会员｜10000次AI额度：1800 ⭐ Stars</p>
+        <button class="buy-btn" onclick="buy('year')">购买</button>
+    </div>
+
+    <script>
+        const tg = window.Telegram.WebApp;
+        tg.expand();
+
+        async function buy(type) {
+            try {
+                const res = await fetch("/api/create-invoice", {
+                    method: "POST",
+                    headers: {"Content-Type": "application/json"},
+                    body: JSON.stringify({ type })
+                })
+                const data = await res.json();
+                tg.openInvoice(data.link, (status) => {
+                    if(status === "paid") {
+                        tg.showAlert("✅ 支付成功！额度自动发放");
+                    } else if(status === "cancelled") {
+                        tg.showAlert("❌ 支付已取消");
+                    } else {
+                        tg.showAlert("⚠️ 支付异常");
+                    }
+                })
+            } catch (err) {
+                tg.showAlert("⚠️ 创建订单失败：" + err.message);
+            }
+        }
+    </script>
 </body>
 </html>
