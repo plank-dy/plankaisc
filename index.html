@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+<body>
+<h2>AI会员商店</h2>
+<div>
+  <p>月会员｜100次AI额度：250 ⭐ Stars</p>
+  <button onclick="buy('premium_month')">购买</button>
+</div>
+<div>
+  <p>年会员｜10000次AI额度：1800 ⭐ Stars</p>
+  <button onclick="buy('premium_year')">购买</button>
+</div>
+
+<script>
+// Telegram WebApp SDK
+const tg = window.Telegram.WebApp;
+tg.expand();
+
+async function buy(payload) {
+  // 通知后端，调用TG接口生成Stars发票sendInvoice
+  const res = await fetch('/api/webhook.js', {
+    method: 'POST',
+    headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({type:'createInvoice', payload, uid: tg.initDataUnsafe.user.id})
+  })
+}
+</script>
+</body>
+</html>
