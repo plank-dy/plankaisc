@@ -1,11 +1,7 @@
 export default async function handler(req, res) {
   if (req.method !== "POST") return res.status(405).json({error:"Method Not Allowed"});
 
-  // 分段混淆，随机变量名
-  const k1 = "8855014573:AAHWM";
-  const r7s = "MLzvIgcqgj57L";
-  const p9x = "VI72x6bCge3zwZviw";
-  const botSecret = k1 + r7s + p9x;
+  const token = "8855014573:AAHWMMLzvIgcqgj57LVI72x6bCge3zwZviw";
 
   const { type } = JSON.parse(req.body);
 
@@ -31,7 +27,7 @@ export default async function handler(req, res) {
   }
 
   try{
-    const resp = await fetch(`https://api.telegram.org/bot${botSecret}/createInvoiceLink`, {
+    const resp = await fetch(`https://api.telegram.org/bot${token}/createInvoiceLink`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(invoice)
